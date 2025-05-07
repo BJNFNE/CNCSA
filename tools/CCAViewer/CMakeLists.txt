@@ -23,4 +23,4 @@ else()
     message("--> This is not a Linux system, skipping unistd.h check.")
 endif()
 
-add_executable(OBCViewer OBCViewer.cpp)
+add_executable(CCAViewer CCAViewer.cpp)
