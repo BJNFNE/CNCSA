@@ -9,7 +9,7 @@
 
 namespace fs = std::filesystem;
 
-const std::string versionNumber = "1.0";
+const std::string versionNumber = "1.6";
 
 void printHeader() {
     std::cout << "======================" << std::endl;
@@ -19,8 +19,15 @@ void printHeader() {
 
 void printUsage() {
     printHeader();
-    std::cout << "Usage: ./CCAViewer <archive.cca>" << std::endl;
+    std::cout << "Usage: ./CCAViewer <script.cca>" << std::endl;
     std::cout << "Version - " << versionNumber << std::endl << std::endl;
+    std::cout << "Supported games:" << std::endl;
+    std::cout << " * Adibou 3" << std::endl;
+    std::cout << " * Adi 5" << std::endl;
+    std::cout << " * Adibou presente series" << std::endl;
+    std::cout << " * Adiboud'chou series" << std::endl;
+    std::cout << " * Nathan Vacances series" << std::endl;
+    std::cout << " * Le Pays des pierres magiques" << std::endl << std::endl;
 }
 
 void clearConsole() {
@@ -33,89 +40,81 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Here are listed the strings for CCA itself.
     std::string inputCCA = argv[1];
 
     #ifdef __unix__
-    // List here everything for the Debug Infos.
     std::string username = getlogin();
     #endif
 
-    // Check if the input file is an CCA Archive.
-    fs::path inputArchive(inputCCA);
-    if (inputArchive.extension() != ".cca") {
-        std::cerr << "Error: This File is not an CCA Archive!" << std::endl;
+    fs::path inputScript(inputCCA);
+    if (inputScript.extension() != ".cca") {
+        std::cerr << "Error: This file is not a CCA Script!" << std::endl;
         return 1;
     }
 
-    // Use the CCA Archive for Input
     std::ifstream CCAInput(inputCCA);
-
     if (!CCAInput) {
-        std::cerr << "Error: Unable to find CCA Archive." << std::endl;
+        std::cerr << "Error: Unable to find CCA Script." << std::endl;
         return 1;
     }
-    
-    // Rewind the CCA Archive back to the beginning
+
+    std::string checkEntrypointCCA;
+    char c;
+    for (int i = 0; i < 25 && CCAInput.get(c); ++i) {
+        checkEntrypointCCA += c;
+    }
+
+    int number;
+    if (sscanf(checkEntrypointCCA.c_str(), "CCA Copyright MDO %d", &number) != 1) {
+        std::cerr << "Error: Unable to find the number from the Entrypoint!" << std::endl;
+        return 1;
+    }
+
     CCAInput.seekg(0);
 
-    // Open the output file for the CCA Archive
-    std::ofstream CCAOutput(inputArchive.stem().string() + ".txt");
-
+    std::ofstream CCAOutput(inputScript.stem().string() + ".txt");
     if (!CCAOutput) {
-        std::cerr << "Error: Unable to create a text output of the CCA Archive." << std::endl;
+        std::cerr << "Error: Unable to create a text output of the CCA Script." << std::endl;
         return 1;
     }
 
-    // Adds the Date when Output file was created to the Output file
     time_t current_time = time(nullptr);
     char cca_timedate[100];
     strftime(cca_timedate, sizeof(cca_timedate), "%Y-%m-%d %H:%M:%S", localtime(&current_time));
 
-    // Read from input and write to output, keeping track of the offset
-    char c; // Declare variable c here to fix error
     std::streampos offset = CCAInput.tellg();
     while (CCAInput.get(c)) {
         if (std::isprint(static_cast<unsigned char>(c))) {
             CCAOutput.put(c);
-            offset = CCAInput.tellg(); // Update the offset after each character is processed
+            offset = CCAInput.tellg();
         }
     }
 
-    // Close input & output for CCA Archive
     CCAInput.close();
     CCAOutput.close();
 
-    // Create a separate file for Debug Infos
-    std::ofstream DebugInfoOutput(inputArchive.stem().string() + "_debuginfo.txt");
+    std::ofstream DebugInfoOutput(inputScript.stem().string() + "_debuginfo.txt");
     if (!DebugInfoOutput) {
         std::cerr << "Error: Unable to create Debug Infos file." << std::endl;
         return 1;
     }
 
-    // Write Debug Infos to the separate file
     DebugInfoOutput << "Debug Infos:" << std::endl;
-    DebugInfoOutput << "Output of " << inputArchive.stem().string() << ".cca" << " created at " << cca_timedate << std::endl;
+    DebugInfoOutput << "Output of " << inputScript.stem().string() << ".cca created at " << cca_timedate << std::endl;
     #ifdef __unix__
     DebugInfoOutput << "Created by " << username << std::endl;
     #endif
     DebugInfoOutput << "Offset (hex): 0x" << std::hex << offset << " hex" << std::dec << std::endl;
-    DebugInfoOutput << "Offset (bytes): " << offset << " bytes" << std::dec << std::endl;
+    DebugInfoOutput << "Offset (bytes): " << offset << " bytes" << std::endl;
     DebugInfoOutput.close();
 
-    std::cout << "CCA Archive (" << argv[1] << ") is now readable." << std::endl;
+    std::cout << "CCA Script (" << argv[1] << ") is now readable." << std::endl;
 
-    // Display the full path of the output file of the CCA Archive
-    std::cout << std::endl;
-    std::cout << "Output created at:" << std::endl;
-    printf("%s", fs::absolute(inputArchive.stem().string() + ".txt").c_str());
-    std::cout << std::endl;
+    std::cout << std::endl << "Output created at:" << std::endl;
+    std::cout << fs::absolute(inputScript.stem().string() + ".txt") << std::endl;
 
-    // Exit message for CCAViewer
-    std::cout << std::endl;
-    std::cout << "Press Enter to exit CCAViewer" << std::endl;
+    std::cout << std::endl << "Press Enter to exit CCAViewer" << std::endl;
     (void)getchar();
     clearConsole();
     return 0;
-
-} // End of namespace fs
+}
