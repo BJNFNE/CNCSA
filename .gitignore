@@ -1,1 +1,2 @@
-tools/CCAViewer/CCAViewer.exe
+tools/CCAViewer/build
+*.CCA
