@@ -41,29 +41,29 @@ int main(int argc, char* argv[]) {
     std::string username = getlogin();
     #endif
 
-    // Check if the input file is an CCA Script.
-    fs::path inputScript(inputCCA);
-    if (inputScript.extension() != ".cca") {
-        std::cerr << "Error: This File is not an CCA Script!" << std::endl;
+    // Check if the input file is an CCA Archive.
+    fs::path inputArchive(inputCCA);
+    if (inputArchive.extension() != ".cca") {
+        std::cerr << "Error: This File is not an CCA Archive!" << std::endl;
         return 1;
     }
 
-    // Use the CCA Script for Input
+    // Use the CCA Archive for Input
     std::ifstream CCAInput(inputCCA);
 
     if (!CCAInput) {
-        std::cerr << "Error: Unable to find CCA Script." << std::endl;
+        std::cerr << "Error: Unable to find CCA Archive." << std::endl;
         return 1;
     }
     
-    // Rewind the CCA Script back to the beginning
+    // Rewind the CCA Archive back to the beginning
     CCAInput.seekg(0);
 
-    // Open the output file for the CCA Script
-    std::ofstream CCAOutput(inputScript.stem().string() + ".txt");
+    // Open the output file for the CCA Archive
+    std::ofstream CCAOutput(inputArchive.stem().string() + ".txt");
 
     if (!CCAOutput) {
-        std::cerr << "Error: Unable to create a text output of the CCA Script." << std::endl;
+        std::cerr << "Error: Unable to create a text output of the CCA Archive." << std::endl;
         return 1;
     }
 
@@ -82,12 +82,12 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Close input & output for CCA Script
+    // Close input & output for CCA Archive
     CCAInput.close();
     CCAOutput.close();
 
     // Create a separate file for Debug Infos
-    std::ofstream DebugInfoOutput(inputScript.stem().string() + "_debuginfo.txt");
+    std::ofstream DebugInfoOutput(inputArchive.stem().string() + "_debuginfo.txt");
     if (!DebugInfoOutput) {
         std::cerr << "Error: Unable to create Debug Infos file." << std::endl;
         return 1;
@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
 
     // Write Debug Infos to the separate file
     DebugInfoOutput << "Debug Infos:" << std::endl;
-    DebugInfoOutput << "Output of " << inputScript.stem().string() << ".cca" << " created at " << cca_timedate << std::endl;
+    DebugInfoOutput << "Output of " << inputArchive.stem().string() << ".cca" << " created at " << cca_timedate << std::endl;
     #ifdef __unix__
     DebugInfoOutput << "Created by " << username << std::endl;
     #endif
@@ -105,10 +105,10 @@ int main(int argc, char* argv[]) {
 
     std::cout << "CCA Archive (" << argv[1] << ") is now readable." << std::endl;
 
-    // Display the full path of the output file of the CCA Script
+    // Display the full path of the output file of the CCA Archive
     std::cout << std::endl;
     std::cout << "Output created at:" << std::endl;
-    printf("%s", fs::absolute(inputScript.stem().string() + ".txt").c_str());
+    printf("%s", fs::absolute(inputArchive.stem().string() + ".txt").c_str());
     std::cout << std::endl;
 
     // Exit message for CCAViewer
